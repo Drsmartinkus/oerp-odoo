@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_order_form_inherit" model="ir.ui.view">
+        <field name="name">sale.order.form.partner.supplier</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <field name="partner_shipping_id" position="after">
+                <field
+                    name="partner_supplier_id"
+                    readonly="state not in ('draft', 'sent')"
+                />
+            </field>
+        </field>
+    </record>
+</odoo>
