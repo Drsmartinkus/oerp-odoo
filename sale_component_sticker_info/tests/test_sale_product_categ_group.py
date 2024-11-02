@@ -37,7 +37,7 @@ class TestSaleProductCategGroup(TransactionCase):
         )
         cls.sale_1 = cls.SaleOrder.create({'partner_id': cls.partner_1.id})
 
-    def test_01_sale_product_categ_group_multi_combo_one(self):
+    def test_01_create_sale_product_categ_group(self):
         # WHEN
         line_1, line_2, line_3 = self.SaleOrderLine.create(
             [
@@ -51,7 +51,58 @@ class TestSaleProductCategGroup(TransactionCase):
         self.assertEqual(line_2.group_name, 'A-2')
         self.assertEqual(line_3.group_name, 'B-1')
 
-    def test_02_sale_product_categ_group_multi_combo_two(self):
+    def test_02_create_sale_product_categ_group_multi_sale(self):
+        # GIVEN
+        sale_2 = self.SaleOrder.create({'partner_id': self.partner_1.id})
+        # WHEN
+        line_1, line_2, line_3, line_4, line_5, line_6 = self.SaleOrderLine.create(
+            [
+                {'order_id': self.sale_1.id, 'product_id': self.product_1_a.id},
+                {'order_id': self.sale_1.id, 'product_id': self.product_2_a.id},
+                {'order_id': self.sale_1.id, 'product_id': self.product_3_b.id},
+                {'order_id': sale_2.id, 'product_id': self.product_1_a.id},
+                {'order_id': sale_2.id, 'product_id': self.product_2_a.id},
+                {'order_id': sale_2.id, 'product_id': self.product_3_b.id},
+            ]
+        )
+        # THEN
+        # Sale 1
+        self.assertEqual(line_1.group_name, 'A-1')
+        self.assertEqual(line_2.group_name, 'A-2')
+        self.assertEqual(line_3.group_name, 'B-1')
+        # Sale 2
+        self.assertEqual(line_4.group_name, 'A-1')
+        self.assertEqual(line_5.group_name, 'A-2')
+        self.assertEqual(line_6.group_name, 'B-1')
+
+    def test_03_write_sale_product_categ_group_multi_sale(self):
+        # GIVEN
+        sale_2 = self.SaleOrder.create({'partner_id': self.partner_1.id})
+        line_1, line_2, line_3, line_4, line_5, line_6 = self.SaleOrderLine.create(
+            [
+                {'order_id': self.sale_1.id, 'product_id': self.product_1_a.id},
+                {'order_id': self.sale_1.id, 'product_id': self.product_2_a.id},
+                {'order_id': self.sale_1.id, 'product_id': self.product_3_b.id},
+                {'order_id': sale_2.id, 'product_id': self.product_1_a.id},
+                {'order_id': sale_2.id, 'product_id': self.product_2_a.id},
+                {'order_id': sale_2.id, 'product_id': self.product_3_b.id},
+            ]
+        )
+        # WHEN
+        (line_1 | line_2 | line_3 | line_4 | line_5 | line_6).write(
+            {'product_id': self.product_1_a}
+        )
+        # THEN
+        # Sale 1
+        self.assertEqual(line_1.group_name, 'A-1')
+        self.assertEqual(line_2.group_name, 'A-2')
+        self.assertEqual(line_3.group_name, 'A-3')
+        # Sale 2
+        self.assertEqual(line_4.group_name, 'A-1')
+        self.assertEqual(line_5.group_name, 'A-2')
+        self.assertEqual(line_6.group_name, 'A-3')
+
+    def test_04_unlink_sale_product_categ_group(self):
         # WHEN
         line_1, line_2, line_3 = self.SaleOrderLine.create(
             [
@@ -69,3 +120,35 @@ class TestSaleProductCategGroup(TransactionCase):
         self.assertFalse(line_1.exists())
         self.assertEqual(line_2.group_name, 'A-1')
         self.assertEqual(line_3.group_name, 'B-1')
+
+    def test_05_unlink_sale_product_categ_group_multi(self):
+        # GIVEN
+        sale_2 = self.SaleOrder.create({'partner_id': self.partner_1.id})
+        # WHEN
+        line_1, line_2, line_3, line_4, line_5, line_6 = self.SaleOrderLine.create(
+            [
+                {'order_id': self.sale_1.id, 'product_id': self.product_2_a.id},
+                {'order_id': self.sale_1.id, 'product_id': self.product_1_a.id},
+                {'order_id': self.sale_1.id, 'product_id': self.product_3_b.id},
+                {'order_id': sale_2.id, 'product_id': self.product_1_a.id},
+                {'order_id': sale_2.id, 'product_id': self.product_2_a.id},
+                {'order_id': sale_2.id, 'product_id': self.product_3_b.id},
+            ]
+        )
+        # THEN
+        # Sale 1
+        self.assertEqual(line_1.group_name, 'A-1')
+        self.assertEqual(line_2.group_name, 'A-2')
+        self.assertEqual(line_3.group_name, 'B-1')
+        # Sale 2
+        self.assertEqual(line_4.group_name, 'A-1')
+        self.assertEqual(line_5.group_name, 'A-2')
+        self.assertEqual(line_6.group_name, 'B-1')
+        # WHEN
+        (line_1 | line_4).unlink()
+        self.assertFalse(line_1.exists())
+        self.assertFalse(line_4.exists())
+        self.assertEqual(line_2.group_name, 'A-1')
+        self.assertEqual(line_3.group_name, 'B-1')
+        self.assertEqual(line_5.group_name, 'A-1')
+        self.assertEqual(line_6.group_name, 'B-1')

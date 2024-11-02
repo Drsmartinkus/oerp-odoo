@@ -35,7 +35,8 @@ class SaleOrderLine(models.Model):
             group = line.product_id.categ_id.property_group
             if not group:
                 continue
-            data[group] |= line
+            # We must make sure sequence is isolated per sale order!
+            data[(group, line.order_id)] |= line
         return data
 
     def _generate_group_name(self, group: str, seq: int):
@@ -45,7 +46,8 @@ class SaleOrderLine(models.Model):
     def _set_group_names(self):
         data = self._group_lines_by_categ_w_group()
         group_names = []
-        for group, lines in data.items():
+        for key, lines in data.items():
+            group, _sale = key
             seq = INIT_SEQ
             for line in lines:
                 line.group_name = line._generate_group_name(group, seq)
