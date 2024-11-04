@@ -2,7 +2,7 @@
 # See LICENSE and COPYRIGHT files for details.
 {
     "name": "Sale - Unique Number",
-    "version": "15.0.1.0.0",
+    "version": "17.0.1.0.0",
     "summary": "Make sale number unique per company.",
     "license": "LGPL-3",
     "author": "Andrius Laukavičius",
