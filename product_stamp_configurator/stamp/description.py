@@ -40,5 +40,5 @@ def _get_price_per_scm_description(stamp_cfg, price, digits):
 
 
 def _get_engraving_time_description(stamp_cfg, digits):
-    engraving_time = calc_engraving_time(stamp_cfg)
-    return f'{engraving_time:.{digits}g} {ENGRAVING_UOM}'
+    engraving_time = calc_engraving_time(stamp_cfg, digits=digits)
+    return f'{engraving_time:g} {ENGRAVING_UOM}'

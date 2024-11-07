@@ -15,6 +15,7 @@
     ],
     'installable': True,
     'data': [
+        'data/decimal_precision.xml',
         'views/res_config_settings.xml',
     ],
 }

@@ -1,4 +1,7 @@
 from odoo import models
+from odoo.tools import float_round
+
+from ..const import DP_STAMP_SUPPLIER_PRICE
 
 
 class StampConfigure(models.TransientModel):
@@ -20,8 +23,14 @@ class StampConfigure(models.TransientModel):
         res = super()._prepare_common_product_vals(stamp_type)
         partner_supplier = self.company_id.partner_supplier_default_stamp_id
         if partner_supplier:
-            cost = getattr(self, f'cost_unit_{stamp_type}')
+            cost = self._get_supplier_cost(stamp_type)
             res['seller_ids'] = [
                 (0, 0, {'partner_id': partner_supplier.id, 'price': cost})
             ]
         return res
+
+    def _get_supplier_cost(self, stamp_type):
+        self.ensure_one()
+        digits = self.env['decimal.precision'].precision_get(DP_STAMP_SUPPLIER_PRICE)
+        cost = getattr(self, f'cost_unit_{stamp_type}')
+        return float_round(cost, precision_digits=digits)

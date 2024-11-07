@@ -134,3 +134,46 @@ class TestStampConfiguratorNames(TestProductStampConfiguratorCommon):
             counter_die_name, 'Plastic Counter-Die, iFE3, 0.5 mm+ Spare 10 pcs'
         )
         self.assertEqual(die_description, '15x10 cm ; A ; 0.48 eur/cm ; 1 val')
+
+    def test_04_generate_names_die_very_slow_engraving_speed(self):
+        # GIVEN
+        self.stamp_design_f.engraving_speed = 5000
+        cfg = self.StampConfigure.create(
+            {
+                'sequence': 1,
+                'partner_id': self.partner_azure.id,
+                'die_id': self.stamp_die_default.id,
+                'design_id': self.stamp_design_f.id,
+                'material_id': self.stamp_material_brass_7.id,
+                'material_counter_id': self.stamp_material_plastic_05.id,
+                'difficulty_id': self.stamp_difficulty_a.id,
+                'size_length': 15,
+                'size_width': 10,
+                'quantity_dies': 10,
+                'quantity_spare_dies': 3,
+                'quantity_counter_dies': 10,
+                'quantity_counter_spare_dies': 10,
+                'origin': '1111',
+                # Explicitly not specifying reference.
+                'ref': False,
+            }
+        )
+        # WHEN
+        die_code = generate_die_code(cfg)
+        mold_code = generate_mold_code(cfg)
+        counter_die_code = generate_counter_die_code(cfg)
+        die_name = generate_die_name(cfg)
+        mold_name = generate_mold_name(cfg)
+        counter_die_name = generate_counter_die_name(cfg)
+        die_description = generate_die_description(cfg, 13.75)
+        # THEN
+        # origin+design.code+seq_code+material.code (ref is False, so omitted)
+        self.assertEqual(die_code, '1111F1B7')
+        self.assertEqual(mold_code, '1111F1P1')
+        self.assertEqual(counter_die_code, '1111F1P1P0.5')
+        self.assertEqual(die_name, 'Brass Die, HFS, F1, 7 mm+ Spare 3 pcs')
+        self.assertEqual(mold_name, 'Molding service F1')
+        self.assertEqual(
+            counter_die_name, 'Plastic Counter-Die, F1, 0.5 mm+ Spare 10 pcs'
+        )
+        self.assertEqual(die_description, '15x10 cm ; A ; 0.09 eur/cm ; 93.8 val')
