@@ -10,7 +10,7 @@ class BaseDataOption(models.Model):
     _description = "Base Data Option"
 
     name = fields.Char(required=True, string="Key")
-    value = fields.Char(required=True)
+    value = fields.Char(required=False)
     base_data_id = fields.Many2one('base.data', required=True, ondelete='cascade')
     data = fields.Text(required=True, default="{}")
 
@@ -30,7 +30,12 @@ class BaseDataOption(models.Model):
     def _match_option(self, options=frozenset[tuple[str, str]]):
         for key, val in options:
             for opt in self:
-                if opt.name == key and opt.value == val:
+                if opt.name == key and (
+                    opt.value == val
+                    # If both compared values are falsy, we assume it
+                    # is a match!
+                    or (not opt.value and not val)
+                ):
                     yield opt
 
     _sql_constraints = [
