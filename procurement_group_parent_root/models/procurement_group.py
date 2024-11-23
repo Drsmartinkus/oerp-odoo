@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.tools.sql import column_exists, create_column
 
 
 class ProcurementGroup(models.Model):
@@ -28,3 +29,10 @@ class ProcurementGroup(models.Model):
             parent_group = candidate
             candidate = get_parent(parent_group)
         return parent_group
+
+    def _auto_init(self):
+        # To avoid computing old procurement groups. Depending on database there could
+        # be huge number of rows in this table!
+        if not column_exists(self.env.cr, "procurement_group", "parent_root_id"):
+            create_column(self.env.cr, "procurement_group", "parent_root_id", "int4")
+        return super()._auto_init()
